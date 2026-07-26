@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bank Simulator</title>
+    <link rel="icon" type="image/png" href="<?= base_url('favicon.png') ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -112,27 +113,43 @@
 
             // Simulate slight delay for realism, then fire API
             setTimeout(() => {
-                fetch("<?= base_url('api/demo/pay') ?>", {
+                // Gunakan URL relatif yang aman dari masalah HTTPS/HTTP Mixed Content
+                let apiUrl = "<?= base_url('api/demo/pay') ?>";
+                // Jika halaman diload dengan HTTPS tapi apiUrl HTTP, paksa HTTPS
+                if (window.location.protocol === 'https:' && apiUrl.startsWith('http:')) {
+                    apiUrl = apiUrl.replace('http:', 'https:');
+                }
+
+                fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ id: trxId })
                 })
-                .then(res => res.json())
+                .then(async res => {
+                    if (!res.ok) {
+                        const text = await res.text();
+                        throw new Error("HTTP error " + res.status + ": " + text);
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     if(data.success) {
                         showSuccess();
                     } else {
-                        alert("Gagal memproses pembayaran demo.");
+                        alert("Gagal memproses pembayaran demo: " + (data.message || "Unknown error"));
                         btn.disabled = false;
                         btn.innerHTML = '<span>Bayar Sekarang</span>';
                         btn.classList.remove('opacity-80');
                     }
                 })
                 .catch(err => {
-                    console.error(err);
-                    alert("Terjadi kesalahan koneksi.");
+                    console.error("Fetch Error:", err);
+                    alert("Terjadi kesalahan koneksi: " + err.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Bayar Sekarang</span>';
+                    btn.classList.remove('opacity-80');
                 });
             }, 1500);
         }
