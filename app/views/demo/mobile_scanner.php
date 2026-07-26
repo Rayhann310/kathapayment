@@ -191,6 +191,11 @@ $t = $theme[$method] ?? $theme['QRIS'];
                 icon.classList.remove('scale-50');
                 icon.classList.add('scale-100');
             }, 50);
+
+            // Auto close window after 2.5 seconds
+            setTimeout(() => {
+                window.close();
+            }, 2500);
         }
     </script>
 </body>
