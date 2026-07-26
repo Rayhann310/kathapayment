@@ -92,7 +92,7 @@
 
                 <div class="text-center w-full">
                     <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Pembayaran</div>
-                    <div class="text-3xl font-black text-gray-900 mb-6">Rp <?= number_format($amount, 0, ',', '.') ?></div>
+                    <div id="amount-display" class="text-3xl font-black text-gray-900 mb-6">Rp <?= number_format($amount, 0, ',', '.') ?></div>
                     
                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 text-sm mb-3">
                         <span class="text-gray-500 font-medium">Metode Simulasi</span>
@@ -100,7 +100,7 @@
                     </div>
                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 text-sm">
                         <span class="text-gray-500 font-medium">ID Transaksi</span>
-                        <span class="font-bold text-gray-800 uppercase text-xs"><?= substr($id, -8) ?></span>
+                        <span id="trx-id-display" class="font-bold text-gray-800 uppercase text-xs"><?= substr($id, -8) ?></span>
                     </div>
                 </div>
             </div>
@@ -165,7 +165,7 @@
             header.classList.add('bg-green-500');
             header.innerHTML = '<h2 class="text-white text-xl font-bold mb-1">Pembayaran Diterima</h2><p class="text-green-100 text-sm">Terima kasih atas simulasi ini!</p>';
             
-            // Show overlay
+            // Show overlay temporarily, then clear everything
             const overlay = document.getElementById('success-overlay');
             const icon = document.getElementById('success-icon');
             overlay.classList.remove('opacity-0', 'pointer-events-none');
@@ -176,10 +176,26 @@
                 icon.classList.add('scale-100');
             }, 100);
             
-            // Redirect after 5s
+            // Clear content after showing success for 3 seconds instead of redirecting
             setTimeout(() => {
-                window.location.href = "<?= base_url() ?>";
-            }, 5000);
+                // Hapus QR Code
+                document.getElementById('qr-wrapper').innerHTML = '<div class="flex flex-col items-center justify-center p-8 text-gray-400"><i class="fa-solid fa-check-circle text-5xl mb-4 text-green-500"></i><p class="font-bold text-gray-800">Transaksi Selesai</p><p class="text-sm mt-2 text-center">Silakan buat skenario baru melalui panel di samping.</p></div>';
+                
+                // Kosongkan nominal dan ID transaksi
+                document.getElementById('amount-display').innerText = 'Rp 0';
+                document.getElementById('trx-id-display').innerText = '-';
+                
+                // Kembalikan header ke warna netral
+                header.classList.remove('bg-green-500');
+                header.classList.add('bg-gray-800');
+                header.innerHTML = '<h2 class="text-white text-xl font-bold mb-1">Simulasi Selesai</h2><p class="text-gray-400 text-sm">Silakan buat tagihan baru</p>';
+                
+                // Hilangkan flash (toast) jika masih ada
+                if (toast.parentNode) {
+                    toast.classList.add('opacity-0', 'transition-opacity');
+                    setTimeout(() => toast.remove(), 500);
+                }
+            }, 3000);
         }
     </script>
 </body>
