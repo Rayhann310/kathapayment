@@ -45,7 +45,16 @@ spl_autoload_register(function ($class) {
     }
     
     $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    
+    // Convert relative class to array
+    $parts = explode('\\', $relative_class);
+    
+    // Lowercase all folder names, keep the class name as is
+    for ($i = 0; $i < count($parts) - 1; $i++) {
+        $parts[$i] = strtolower($parts[$i]);
+    }
+    
+    $file = $base_dir . implode('/', $parts) . '.php';
     
     if (file_exists($file)) {
         require $file;
