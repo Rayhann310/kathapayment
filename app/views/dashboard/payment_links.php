@@ -256,7 +256,7 @@ $totalItems = $totalItems ?? 0;
 
 <!-- ─── Create Link Modal ──────────────────────────────────────────────────── -->
 <div id="create-modal" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm flex justify-center items-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div>
                 <h3 class="text-lg font-bold text-gray-900">Buat Payment Link Baru</h3>
@@ -267,7 +267,7 @@ $totalItems = $totalItems ?? 0;
             </button>
         </div>
 
-        <form method="POST" action="<?= base_url('payment-links/create') ?>" class="px-6 py-6 space-y-5">
+        <form method="POST" action="<?= base_url('payment-links/create') ?>" class="px-6 py-6 space-y-5 overflow-y-auto">
             <input type="hidden" name="_csrf_token" value="<?= $csrfToken ?>">
 
             <!-- Nama Produk -->
