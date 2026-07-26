@@ -69,7 +69,14 @@
         </div>
 
         <!-- Right: Preview Display -->
-        <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex flex-col relative">
+            
+            <!-- Countdown Banner -->
+            <div id="countdown-banner" class="bg-red-50 text-red-600 text-center py-2 text-sm font-bold flex items-center justify-center gap-2">
+                <i class="fa-regular fa-clock"></i>
+                <span>Selesaikan pembayaran dalam: <span id="timer-display">05:00</span></span>
+            </div>
+
             <!-- Header -->
             <div id="status-header" class="bg-[#00529C] px-6 py-8 text-center transition-colors duration-500">
                 <h2 class="text-white text-xl font-bold mb-1">
@@ -155,6 +162,64 @@
     <script>
         const trxId = "<?= $id ?>";
         const scanUrl = "<?= $scan_url ?>";
+        let isExpired = false;
+        
+        // Countdown Logic (5 minutes = 300 seconds)
+        let timeLeft = 300;
+        const timerDisplay = document.getElementById('timer-display');
+        const countdownBanner = document.getElementById('countdown-banner');
+        
+        const countdownInterval = setInterval(() => {
+            if (isExpired) {
+                clearInterval(countdownInterval);
+                return;
+            }
+            
+            timeLeft--;
+            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            let s = (timeLeft % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = m + ':' + s;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                showExpired();
+            }
+        }, 1000);
+        
+        function showExpired() {
+            isExpired = true;
+            clearInterval(pollingInterval);
+            
+            // Toast notification kedaluwarsa
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl font-bold flex items-center gap-3 animate-pulse z-50';
+            toast.innerHTML = '<i class="fa-solid fa-circle-xmark text-xl"></i> Waktu Habis, Simulasi Dibatalkan!';
+            document.body.appendChild(toast);
+            
+            // Hapus toast setelah 4 detik
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+            
+            // Ubah banner
+            countdownBanner.className = 'bg-red-600 text-white text-center py-2 text-sm font-bold transition-colors';
+            countdownBanner.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1"></i> Simulasi Kedaluwarsa';
+            
+            // Hapus QR / VA
+            document.getElementById('qr-wrapper').innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 text-gray-400">
+                    <i class="fa-solid fa-clock text-5xl mb-4 text-red-500 animate-pulse"></i>
+                    <p class="font-bold text-gray-800 text-lg">Waktu Habis</p>
+                    <p class="text-sm mt-2 text-center text-gray-500">Skenario pembayaran ini telah dibatalkan otomatis.</p>
+                </div>
+            `;
+            
+            // Ubah header
+            const header = document.getElementById('status-header');
+            header.className = 'bg-gray-800 px-6 py-8 text-center transition-colors duration-500';
+            header.innerHTML = '<h2 class="text-white text-xl font-bold mb-1">Dibatalkan</h2><p class="text-gray-400 text-sm">Silakan buat skenario baru</p>';
+        }
     </script>
 
     <script>
@@ -208,6 +273,9 @@
         }, 1000); // Polling every 1 second for realtime feel
 
         function showSuccess() {
+            isExpired = true; // Hentikan countdown
+            clearInterval(countdownInterval);
+            
             // Toast notification
             const toast = document.createElement('div');
             toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl font-bold flex items-center gap-3 animate-bounce z-50';
