@@ -38,6 +38,13 @@ class DemoController extends Controller
         
         $scan_url = base_url("demo/scan?id=" . $id);
 
+        // Auto-cleanup: Hapus data simulasi yang lebih tua dari 1 hari agar database tidak penuh
+        try {
+            $this->db->exec("DELETE FROM demo_transactions WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 DAY)");
+        } catch (\Exception $e) {
+            // Abaikan jika error
+        }
+
         try {
             $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, payment_method, status) VALUES (?, ?, ?, 'pending')");
             $stmt->execute([$id, $amount, $method]);
