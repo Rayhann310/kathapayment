@@ -211,18 +211,6 @@
         </div>
     </div>
 
-    <!-- Instructions Modal / Toast -->
-    <div class="fixed bottom-6 right-6 max-w-sm bg-white rounded-2xl p-5 shadow-2xl border border-blue-100 flex gap-4 animate-bounce">
-        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <i class="fa-solid fa-mobile-screen-button text-xl"></i>
-        </div>
-        <div>
-            <h4 class="font-bold text-gray-900 text-sm mb-1">Langkah 1 dari 2</h4>
-            <p class="text-xs text-gray-500 leading-relaxed">
-                Silakan buka aplikasi kamera di Smartphone Anda, dan arahkan ke QR Code di tengah layar.
-            </p>
-        </div>
-    </div>
 
     <script>
         const trxId = "<?= $id ?>";

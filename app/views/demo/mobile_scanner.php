@@ -34,89 +34,131 @@ $t = $theme[$method] ?? $theme['QRIS'];
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans flex flex-col items-center">
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col items-center justify-center sm:py-6">
     
-    <div class="w-full max-w-md bg-white min-h-screen shadow-xl flex flex-col relative overflow-hidden">
+    <div class="w-full max-w-md bg-white min-h-screen sm:min-h-[850px] sm:rounded-[2.5rem] shadow-2xl flex flex-col relative overflow-hidden ring-1 ring-gray-100">
         
-        <!-- App Header -->
-        <div class="<?= $t['bg'] ?> text-white px-5 py-4 flex items-center gap-3 shadow-md z-10">
-            <i class="fa-solid fa-arrow-left text-lg"></i>
-            <div class="font-semibold text-lg"><?= $t['name'] ?></div>
+        <!-- App Header with mesh gradient background -->
+        <div class="relative <?= $t['bg'] ?> pb-16 pt-6 px-6 z-0 overflow-hidden">
+            <!-- Decorative circles -->
+            <div class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
+            
+            <div class="relative z-10 flex items-center justify-between text-white mb-6">
+                <i class="fa-solid fa-arrow-left text-xl cursor-pointer" onclick="window.close()"></i>
+                <div class="font-bold text-lg tracking-wide"><?= $t['name'] ?></div>
+                <i class="fa-regular fa-circle-question text-xl"></i>
+            </div>
         </div>
 
-        <div id="payment-content" class="flex-1 flex flex-col">
-            <!-- Merchant Info -->
-            <div class="<?= $t['bg'] ?> px-5 pb-8 pt-4 text-center rounded-b-3xl mb-4 relative z-0">
-                <div class="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center <?= $t['text'] ?> text-2xl mb-3 shadow-lg">
+        <div id="payment-content" class="flex-1 flex flex-col relative z-10 -mt-12 px-5">
+            <!-- Amount Card -->
+            <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-6 mb-6 border border-gray-50 flex flex-col items-center relative overflow-hidden">
+                <div class="w-16 h-16 bg-gradient-to-tr from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center <?= $t['text'] ?> text-3xl mb-4 shadow-sm border border-gray-100">
                     <i class="fa-solid <?= $t['icon'] ?>"></i>
                 </div>
-                <h2 class="text-white font-bold text-xl mb-1">KathaPayment Demo</h2>
-                <p class="text-white/80 text-sm font-medium">No. Ref: ID<?= rand(1000,9999) ?></p>
+                
+                <h2 class="text-gray-500 font-medium text-sm mb-1 uppercase tracking-widest">Total Pembayaran</h2>
+                <div class="text-4xl font-black text-gray-900 mb-2">Rp <?= number_format($trx['amount'], 0, ',', '.') ?></div>
+                
+                <div class="bg-gray-50 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full mb-2">
+                    ID: <?= substr($trx['id'], -8) ?>
+                </div>
             </div>
 
-            <div class="px-5 -mt-8 relative z-10">
-                <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-6 mb-6">
-                    <?php if ($method !== 'QRIS'): ?>
-                    <div class="text-gray-500 text-sm font-medium mb-1"><?= $method === 'ALFAMART' ? 'Kode Pembayaran' : 'Nomor Virtual Account' ?></div>
-                    <div class="text-xl font-mono font-bold text-gray-900 mb-4 pb-4 border-b border-gray-100">
+            <!-- Payment Details Card -->
+            <div class="bg-white rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.04)] p-6 mb-6 border border-gray-50">
+                <div class="flex items-center gap-3 mb-5 pb-5 border-b border-gray-100">
+                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Merchant</div>
+                        <div class="font-bold text-gray-900">Katha Store</div>
+                    </div>
+                </div>
+
+                <?php if ($method !== 'QRIS'): ?>
+                <div class="mb-5 pb-5 border-b border-gray-100">
+                    <div class="text-xs text-gray-500 mb-1"><?= $method === 'ALFAMART' ? 'Kode Pembayaran' : 'Nomor Virtual Account' ?></div>
+                    <div class="text-xl font-mono font-bold text-gray-900 tracking-wider">
                         <?= $method === 'ALFAMART' ? 'KTHA' . rand(10000000, 99999999) : '8077' . rand(100000000, 999999999) ?>
                     </div>
-                    <?php endif; ?>
-
-                    <div class="text-center mb-6">
-                        <div class="text-gray-500 text-sm font-medium mb-1">Total Pembayaran</div>
-                        <div class="text-4xl font-black text-gray-900">Rp <?= number_format($trx['amount'], 0, ',', '.') ?></div>
-                    </div>
-                    
-                    <div class="border-t border-dashed border-gray-200 pt-4">
-                        <div class="flex justify-between items-center mb-3 text-sm">
-                            <span class="text-gray-500">Sumber Dana</span>
-                            <span class="font-bold text-gray-800">Saldo Utama</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">Biaya Admin</span>
-                            <span class="font-bold text-green-600">Gratis</span>
-                        </div>
-                    </div>
                 </div>
-
-                <!-- Info Alert -->
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 text-blue-700 text-sm mb-auto">
-                    <i class="fa-solid fa-circle-info mt-0.5"></i>
-                    <div>
-                        <strong>Mode Simulasi</strong><br>
-                        Ini adalah aplikasi buatan untuk mendemonstrasikan proses pembayaran QRIS. Tidak ada uang asli yang dipotong.
+                <?php endif; ?>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-500">Sumber Dana</span>
+                        <span class="font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-wallet <?= $t['text'] ?>"></i> Saldo Utama
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-500">Biaya Admin</span>
+                        <span class="font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded">Gratis</span>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-auto p-5 pb-8 bg-white border-t border-gray-100">
-                <button id="btn-pay" onclick="processPayment()" class="w-full <?= $t['bg'] ?> hover:opacity-90 text-white font-bold text-lg py-4 rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
-                    <span>Bayar Sekarang</span>
+            <!-- Info Alert -->
+            <div class="bg-blue-50/50 border border-blue-100/50 rounded-2xl p-4 flex gap-3 text-blue-700 text-xs leading-relaxed mb-6">
+                <i class="fa-solid fa-circle-info mt-0.5 text-lg"></i>
+                <div>
+                    <strong class="block mb-1">Mode Simulasi</strong>
+                    Ini adalah aplikasi buatan untuk demonstrasi. Tidak ada uang asli yang dipotong.
+                </div>
+            </div>
+
+            <div class="mt-auto pb-8">
+                <button id="btn-pay" onclick="processPayment()" class="w-full <?= $t['bg'] ?> hover:opacity-90 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_8px_20px_rgb(0,0,0,0.15)] hover:shadow-[0_8px_25px_rgb(0,0,0,0.25)] transition-all flex justify-center items-center gap-2 transform active:scale-[0.98]">
+                    <span>Konfirmasi & Bayar</span>
                 </button>
+                <div class="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-lock"></i> Pembayaran Aman & Terenkripsi
+                </div>
             </div>
         </div>
 
         <!-- Success State (Hidden initially) -->
         <div id="success-content" class="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center p-6 hidden opacity-0 transition-opacity duration-500">
-            <div class="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-6 scale-50 transition-transform duration-500" id="success-icon">
-                <i class="fa-solid fa-check text-5xl"></i>
+            <!-- Celebration particles background -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                <div class="absolute top-1/3 right-1/4 w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
+                <div class="absolute bottom-1/3 left-1/3 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
             </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Pembayaran Berhasil!</h2>
-            <p class="text-gray-500 text-center mb-8">KathaPayment (Perangkat 1) seharusnya sudah menerima notifikasi sukses secara realtime saat ini juga.</p>
+
+            <div class="w-28 h-28 bg-green-50 rounded-full flex items-center justify-center mb-6 relative">
+                <div class="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-50"></div>
+                <div class="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-green-200 z-10 scale-50 transition-transform duration-500" id="success-icon">
+                    <i class="fa-solid fa-check text-4xl"></i>
+                </div>
+            </div>
             
-            <div class="bg-gray-50 w-full rounded-2xl p-5 border border-gray-100 mb-8">
-                <div class="flex justify-between text-sm mb-3">
-                    <span class="text-gray-500">Tanggal</span>
+            <h2 class="text-2xl font-black text-gray-900 mb-2">Pembayaran Berhasil!</h2>
+            <p class="text-gray-500 text-center mb-8 text-sm">Notifikasi sukses telah dikirim ke perangkat utama secara realtime.</p>
+            
+            <div class="bg-gray-50 w-full rounded-3xl p-6 border border-gray-100 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-green-100 rounded-bl-full opacity-50"></div>
+                
+                <div class="flex justify-between items-center text-sm mb-4 pb-4 border-b border-gray-200">
+                    <span class="text-gray-500">Tanggal Waktu</span>
                     <span class="font-bold text-gray-800"><?= date('d M Y, H:i') ?></span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-500">Nominal</span>
-                    <span class="font-bold text-gray-800">Rp <?= number_format($trx['amount'], 0, ',', '.') ?></span>
+                <div class="flex justify-between items-center text-sm mb-4 pb-4 border-b border-gray-200">
+                    <span class="text-gray-500">No. Ref</span>
+                    <span class="font-bold font-mono text-gray-800 uppercase"><?= substr($trx['id'], -8) ?></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Total Dibayar</span>
+                    <span class="font-black text-lg text-gray-900">Rp <?= number_format($trx['amount'], 0, ',', '.') ?></span>
                 </div>
             </div>
 
-            <button onclick="window.close()" class="text-blue-600 font-bold text-sm bg-blue-50 px-6 py-3 rounded-full">Tutup Simulasi</button>
+            <button onclick="window.close()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold text-base py-4 rounded-2xl shadow-lg transition-all">
+                Selesai & Tutup
+            </button>
         </div>
 
     </div>
