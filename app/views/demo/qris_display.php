@@ -102,10 +102,13 @@
                             <div class="text-2xl font-mono font-bold text-gray-900 tracking-wider">
                                 <?= $method === 'ALFAMART' ? 'KTHA' . rand(10000000, 99999999) : '8077' . rand(100000000, 999999999) ?>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-gray-200">
-                                <a href="<?= $scan_url ?>" target="_blank" class="inline-flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all active:scale-95">
-                                    <i class="fa-solid fa-mobile-screen-button"></i> Buka Simulator HP
+                            <div class="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
+                                <a href="<?= $scan_url ?>" target="_blank" class="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all active:scale-95">
+                                    <i class="fa-solid fa-mobile-screen-button"></i> Buka Simulator
                                 </a>
+                                <button onclick="copySimulationLink()" class="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-bold py-3 px-4 rounded-xl shadow-sm transition-all active:scale-95">
+                                    <i class="fa-solid fa-copy"></i> Salin Link
+                                </button>
                             </div>
                         </div>
 
@@ -152,6 +155,23 @@
     <script>
         const trxId = "<?= $id ?>";
         const scanUrl = "<?= $scan_url ?>";
+    </script>
+
+    <script>
+        function copySimulationLink() {
+            navigator.clipboard.writeText(scanUrl).then(() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50 transition-opacity duration-300';
+                toast.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Link tersalin!';
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
     </script>
 
     <?php if ($method === 'QRIS'): ?>
