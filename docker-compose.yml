@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: kathapayment_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=secret
+      - DB_NAME=kathapayment
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: kathapayment_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: kathapayment
+    volumes:
+      - db_data:/var/lib/mysql
+      # Uncomment the next line to automatically run schema scripts on init:
+      # - ./database:/docker-entrypoint-initdb.d
+
+volumes:
+  db_data:
