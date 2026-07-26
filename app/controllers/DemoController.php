@@ -30,18 +30,24 @@ class DemoController extends Controller
 
         // Generate a new demo transaction session
         $id = 'demo-' . bin2hex(random_bytes(8));
-        $amount = rand(10, 500) * 1000; // Random amount between 10k - 500k
+        
+        $amount = isset($_GET['amount']) ? (int)$_GET['amount'] : rand(10, 500) * 1000;
+        if ($amount < 10000) $amount = 10000; // Minimum 10k
+        
+        $method = isset($_GET['method']) ? $_GET['method'] : 'QRIS';
+        
+        $scan_url = base_url("demo/scan?id=" . $id);
 
         try {
-            $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, status) VALUES (?, ?, 'pending')");
-            $stmt->execute([$id, $amount]);
+            $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, payment_method, status) VALUES (?, ?, ?, 'pending')");
+            $stmt->execute([$id, $amount, $method]);
         } catch (\PDOException $e) {
-            // Error 42S02 means table doesn't exist
-            if ($e->getCode() == '42S02') {
+            // Error 42S02 means table doesn't exist or missing column
+            if ($e->getCode() == '42S02' || strpos($e->getMessage(), 'Unknown column') !== false) {
                 \App\Services\SelfHealingService::runMigrations();
                 // Retry
-                $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, status) VALUES (?, ?, 'pending')");
-                $stmt->execute([$id, $amount]);
+                $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, payment_method, status) VALUES (?, ?, ?, 'pending')");
+                $stmt->execute([$id, $amount, $method]);
             } else {
                 throw $e;
             }
@@ -51,7 +57,8 @@ class DemoController extends Controller
         $this->view('demo/qris_display', [
             'id' => $id,
             'amount' => $amount,
-            'scan_url' => base_url("demo/scan?id=" . $id)
+            'method' => $method,
+            'scan_url' => $scan_url
         ]);
     }
 
@@ -116,13 +123,18 @@ class DemoController extends Controller
             return;
         }
 
-        $stmt = $this->db->prepare("UPDATE demo_transactions SET status = 'paid' WHERE id = ?");
-        $success = $stmt->execute([$id]);
+        try {
+            $stmt = $this->db->prepare("UPDATE demo_transactions SET status = 'paid' WHERE id = ?");
+            $success = $stmt->execute([$id]);
 
-        if ($success) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false]);
+            if ($success) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Update failed']);
+            }
+        } catch (\Exception $e) {
+            error_log("Demo API Error: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 }

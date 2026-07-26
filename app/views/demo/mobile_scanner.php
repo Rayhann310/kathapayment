@@ -1,3 +1,17 @@
+<?php
+$method = $trx['payment_method'] ?? 'QRIS';
+
+// Tentukan warna dan nama sesuai bank
+$theme = [
+    'QRIS' => ['bg' => 'bg-blue-600', 'text' => 'text-blue-600', 'name' => 'Katha E-Wallet', 'icon' => 'fa-wallet'],
+    'BCA_VA' => ['bg' => 'bg-[#005E6A]', 'text' => 'text-[#005E6A]', 'name' => 'm-BCA Simulator', 'icon' => 'fa-building-columns'],
+    'BNI_VA' => ['bg' => 'bg-[#F15A23]', 'text' => 'text-[#F15A23]', 'name' => 'BNI Mobile Sim', 'icon' => 'fa-building-columns'],
+    'MANDIRI_VA' => ['bg' => 'bg-[#003D79]', 'text' => 'text-[#003D79]', 'name' => 'Livin Simulator', 'icon' => 'fa-building-columns'],
+    'ALFAMART' => ['bg' => 'bg-[#E31E24]', 'text' => 'text-[#E31E24]', 'name' => 'Alfamart POS Sim', 'icon' => 'fa-shop']
+];
+
+$t = $theme[$method] ?? $theme['QRIS'];
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -25,19 +39,19 @@
     <div class="w-full max-w-md bg-white min-h-screen shadow-xl flex flex-col relative overflow-hidden">
         
         <!-- App Header -->
-        <div class="bg-blue-600 text-white px-5 py-4 flex items-center gap-3 shadow-md z-10">
+        <div class="<?= $t['bg'] ?> text-white px-5 py-4 flex items-center gap-3 shadow-md z-10">
             <i class="fa-solid fa-arrow-left text-lg"></i>
-            <div class="font-semibold text-lg">Konfirmasi Pembayaran</div>
+            <div class="font-semibold text-lg"><?= $t['name'] ?></div>
         </div>
 
         <div id="payment-content" class="flex-1 flex flex-col">
             <!-- Merchant Info -->
-            <div class="bg-blue-600 px-5 pb-8 pt-4 text-center rounded-b-3xl mb-4 relative z-0">
-                <div class="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center text-blue-600 text-2xl mb-3 shadow-lg">
-                    <i class="fa-solid fa-store"></i>
+            <div class="<?= $t['bg'] ?> px-5 pb-8 pt-4 text-center rounded-b-3xl mb-4 relative z-0">
+                <div class="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center <?= $t['text'] ?> text-2xl mb-3 shadow-lg">
+                    <i class="fa-solid <?= $t['icon'] ?>"></i>
                 </div>
                 <h2 class="text-white font-bold text-xl mb-1">KathaPayment Demo</h2>
-                <p class="text-blue-100 text-sm font-medium">NMID: ID1029384756</p>
+                <p class="text-white/80 text-sm font-medium">No. Ref: ID<?= rand(1000,9999) ?></p>
             </div>
 
             <div class="px-5 -mt-8 relative z-10">
@@ -70,7 +84,7 @@
             </div>
 
             <div class="mt-auto p-5 pb-8 bg-white border-t border-gray-100">
-                <button id="btn-pay" onclick="processPayment()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_8px_20px_rgba(37,99,235,0.25)] transition-all flex justify-center items-center gap-2">
+                <button id="btn-pay" onclick="processPayment()" class="w-full <?= $t['bg'] ?> hover:opacity-90 text-white font-bold text-lg py-4 rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
                     <span>Bayar Sekarang</span>
                 </button>
             </div>
