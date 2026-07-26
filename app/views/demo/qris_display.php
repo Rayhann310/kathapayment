@@ -72,23 +72,52 @@
         <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
             <!-- Header -->
             <div id="status-header" class="bg-[#00529C] px-6 py-8 text-center transition-colors duration-500">
-                <h2 class="text-white text-xl font-bold mb-1">Pindai Untuk Simulasi</h2>
-                <p class="text-blue-100 text-sm">Gunakan kamera HP Anda untuk membuka halaman simulasi E-Wallet / Mobile Banking</p>
+                <h2 class="text-white text-xl font-bold mb-1">
+                    <?= $method === 'QRIS' ? 'Pindai Untuk Simulasi' : 'Instruksi Pembayaran' ?>
+                </h2>
+                <p class="text-blue-100 text-sm">
+                    <?= $method === 'QRIS' ? 'Gunakan kamera HP Anda untuk membuka halaman simulasi E-Wallet' : 'Gunakan Simulator HP untuk mensimulasikan pembayaran' ?>
+                </p>
             </div>
             
             <div class="p-8 pb-10 flex flex-col items-center">
-                <!-- QR Wrapper -->
-                <div id="qr-wrapper" class="p-3 bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 relative transition-all duration-500">
-                    <div id="qrcode"></div>
-                    
-                    <!-- Success Overlay (Hidden by default) -->
-                    <div id="success-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10">
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-3 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
-                            <i class="fa-solid fa-check text-3xl"></i>
+                <!-- Visuals based on method -->
+                <?php if ($method === 'QRIS'): ?>
+                    <div id="qr-wrapper" class="p-3 bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 relative transition-all duration-500">
+                        <div id="qrcode"></div>
+                        <!-- Success Overlay -->
+                        <div id="success-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-3 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
+                                <i class="fa-solid fa-check text-3xl"></i>
+                            </div>
+                            <p class="font-bold text-gray-800">Berhasil!</p>
                         </div>
-                        <p class="font-bold text-gray-800">Berhasil!</p>
                     </div>
-                </div>
+                <?php else: ?>
+                    <div id="qr-wrapper" class="w-full mb-6 relative transition-all duration-500">
+                        <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200 text-center relative z-0">
+                            <div class="text-gray-500 text-sm font-semibold mb-2">
+                                <?= $method === 'ALFAMART' ? 'Kode Pembayaran' : 'Nomor Virtual Account' ?>
+                            </div>
+                            <div class="text-2xl font-mono font-bold text-gray-900 tracking-wider">
+                                <?= $method === 'ALFAMART' ? 'KTHA' . rand(10000000, 99999999) : '8077' . rand(100000000, 999999999) ?>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <a href="<?= $scan_url ?>" target="_blank" class="inline-flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all active:scale-95">
+                                    <i class="fa-solid fa-mobile-screen-button"></i> Buka Simulator HP
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Success Overlay -->
+                        <div id="success-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-3 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
+                                <i class="fa-solid fa-check text-3xl"></i>
+                            </div>
+                            <p class="font-bold text-gray-800">Berhasil!</p>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div class="text-center w-full">
                     <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Pembayaran</div>
@@ -123,17 +152,23 @@
     <script>
         const trxId = "<?= $id ?>";
         const scanUrl = "<?= $scan_url ?>";
-        
-        // Generate QR Code
-        new QRCode(document.getElementById("qrcode"), {
-            text: scanUrl,
-            width: 200,
-            height: 200,
-            colorDark : "#0f172a",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
+    </script>
 
+    <?php if ($method === 'QRIS'): ?>
+    <script>
+        // Setup QR Code only if QRIS
+        new QRCode(document.getElementById("qrcode"), {
+            text: "<?= $scan_url ?>",
+            width: 250,
+            height: 250,
+            colorDark: "#00529C",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+    <?php endif; ?>
+
+    <script>
         // Polling function
         let pollingInterval = setInterval(() => {
             let apiUrl = "<?= base_url('api/demo/status?id=') ?>" + trxId;

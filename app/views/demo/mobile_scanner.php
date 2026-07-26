@@ -56,6 +56,13 @@ $t = $theme[$method] ?? $theme['QRIS'];
 
             <div class="px-5 -mt-8 relative z-10">
                 <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-6 mb-6">
+                    <?php if ($method !== 'QRIS'): ?>
+                    <div class="text-gray-500 text-sm font-medium mb-1"><?= $method === 'ALFAMART' ? 'Kode Pembayaran' : 'Nomor Virtual Account' ?></div>
+                    <div class="text-xl font-mono font-bold text-gray-900 mb-4 pb-4 border-b border-gray-100">
+                        <?= $method === 'ALFAMART' ? 'KTHA' . rand(10000000, 99999999) : '8077' . rand(100000000, 999999999) ?>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="text-center mb-6">
                         <div class="text-gray-500 text-sm font-medium mb-1">Total Pembayaran</div>
                         <div class="text-4xl font-black text-gray-900">Rp <?= number_format($trx['amount'], 0, ',', '.') ?></div>
