@@ -30,8 +30,8 @@
                     <a href="<?= base_url('register') ?>" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 border border-transparent text-[15px] font-semibold rounded-full text-white bg-primary-600 hover:bg-primary-700 transition-all shadow-[0_8px_20px_rgba(13,110,253,0.25)] hover:-translate-y-0.5">
                         <?= $lang['hero_start'] ?? 'Mulai Sekarang' ?> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                     </a>
-                    <a href="<?= base_url('faq') ?>" class="w-full sm:w-auto mt-3 sm:mt-0 flex items-center justify-center px-8 py-3.5 border-2 border-blue-100 text-[15px] font-semibold rounded-full text-primary-600 bg-white hover:bg-blue-50 transition-all hover:border-blue-200">
-                        <?= $lang['hero_contact'] ?? 'Lihat Dokumentasi' ?>
+                    <a href="<?= base_url('demo/qris') ?>" class="w-full sm:w-auto mt-3 sm:mt-0 flex items-center justify-center px-8 py-3.5 border-2 border-emerald-100 text-[15px] font-semibold rounded-full text-emerald-600 bg-white hover:bg-emerald-50 transition-all hover:border-emerald-200 shadow-sm hover:-translate-y-0.5">
+                        <i class="fa-solid fa-qrcode mr-2"></i> Coba Simulasi Live
                     </a>
                 </div>
 

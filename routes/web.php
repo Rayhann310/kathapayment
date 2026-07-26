@@ -14,8 +14,10 @@ $router->post('/reset-password', 'AuthController@updatePassword');
 // Public Landing Pages
 $router->get('/', 'HomeController@index');
 $router->get('/features', 'HomeController@features');
+// Live Demo Routes
+$router->get('/demo/qris', 'DemoController@qrisDisplay');
+$router->get('/demo/scan', 'DemoController@mobileScanner');
 $router->get('/pricing', 'HomeController@pricing');
-$router->get('/faq', 'HomeController@faq');
 $router->get('/about', 'HomeController@about');
 $router->get('/careers', 'HomeController@careers');
 $router->get('/developers', 'HomeController@developers');
