@@ -1,5 +1,36 @@
 <?php ob_start(); ?>
 
+<?php
+// Flash messages
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+$flashError   = $_SESSION['flash_error'] ?? null;
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+
+$csrfToken = $_SESSION['csrf_token'] ?? '';
+$stats     = $stats ?? ['unpaid_count' => 0, 'unpaid_amount' => 0, 'paid_count' => 0, 'expired_count' => 0];
+$invoices  = $invoices ?? [];
+$statusTab = $statusTab ?? 'all';
+$search    = $search ?? '';
+$page      = $page ?? 1;
+$totalPages = $totalPages ?? 1;
+$totalItems = $totalItems ?? 0;
+?>
+
+<!-- Flash notifications -->
+<?php if ($flashSuccess): ?>
+<div id="flash-ok" class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm font-semibold">
+    <i class="fa-solid fa-circle-check"></i> <?= htmlspecialchars($flashSuccess) ?>
+    <button onclick="document.getElementById('flash-ok').remove()" class="ml-auto text-green-400 hover:text-green-700"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<?php endif; ?>
+<?php if ($flashError): ?>
+<div id="flash-err" class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-semibold">
+    <i class="fa-solid fa-circle-xmark"></i> <?= htmlspecialchars($flashError) ?>
+    <button onclick="document.getElementById('flash-err').remove()" class="ml-auto text-red-400 hover:text-red-700"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<?php endif; ?>
+
+<!-- Page Header -->
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
         <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Invoices</h2>
@@ -9,20 +40,20 @@
         <button class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm transition-all flex items-center gap-2">
             <i class="fa-solid fa-download"></i> Export
         </button>
-        <button onclick="document.getElementById('create-invoice-modal').classList.remove('hidden')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow-sm shadow-blue-600/20 text-sm transition-all flex items-center gap-2">
+        <button onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow-sm shadow-blue-600/20 text-sm transition-all flex items-center gap-2">
             <i class="fa-solid fa-plus"></i> Create Invoice
         </button>
     </div>
 </div>
 
-<!-- Stats (Mock Data for Premium UI Feel) -->
+<!-- Stats (Real from DB) -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
         <div>
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Unpaid Invoices</p>
-            <h3 class="text-2xl font-extrabold text-gray-900">45</h3>
+            <h3 class="text-2xl font-extrabold text-gray-900"><?= (int)($stats['unpaid_count'] ?? 0) ?></h3>
             <div class="text-xs font-semibold text-yellow-600 mt-2 flex items-center gap-1">
-                Rp 12.450.000 menunggu pembayaran
+                Rp <?= number_format($stats['unpaid_amount'] ?? 0, 0, ',', '.') ?> menunggu pembayaran
             </div>
         </div>
         <div class="w-12 h-12 bg-yellow-50 text-yellow-600 rounded-xl flex items-center justify-center text-xl">
@@ -31,11 +62,8 @@
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
         <div>
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Paid (This Month)</p>
-            <h3 class="text-2xl font-extrabold text-gray-900">128</h3>
-            <div class="text-xs font-semibold text-green-600 mt-2 flex items-center gap-1">
-                <i class="fa-solid fa-arrow-trend-up"></i> +12% dari bulan lalu
-            </div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Paid (Total)</p>
+            <h3 class="text-2xl font-extrabold text-gray-900"><?= (int)($stats['paid_count'] ?? 0) ?></h3>
         </div>
         <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl">
             <i class="fa-solid fa-check-double"></i>
@@ -44,10 +72,7 @@
     <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
         <div>
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Expired / Failed</p>
-            <h3 class="text-2xl font-extrabold text-gray-900">12</h3>
-            <div class="text-xs font-semibold text-red-500 mt-2 flex items-center gap-1">
-                8.5% Expired Rate
-            </div>
+            <h3 class="text-2xl font-extrabold text-gray-900"><?= (int)($stats['expired_count'] ?? 0) ?></h3>
         </div>
         <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl">
             <i class="fa-solid fa-circle-xmark"></i>
@@ -55,13 +80,24 @@
     </div>
 </div>
 
-<!-- Tabs -->
+<!-- Tabs (Clean URL) -->
 <div class="border-b border-gray-200 mb-6">
     <nav class="-mb-px flex gap-6">
-        <a href="#" class="border-b-2 border-blue-600 text-blue-600 font-bold py-3 px-1 text-sm">All Invoices</a>
-        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Pending</a>
-        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Paid</a>
-        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Expired</a>
+        <?php
+        $tabs = [
+            'all'      => 'All Invoices (' . $totalItems . ')',
+            'pending'  => 'Pending',
+            'paid'     => 'Paid',
+            'expired'  => 'Expired',
+        ];
+        foreach ($tabs as $key => $label):
+            $isActive   = $statusTab === $key;
+            $cls        = $isActive ? 'border-b-2 border-blue-600 text-blue-600 font-bold' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium';
+            $url        = $key === 'all' ? base_url('invoices') : base_url('invoices/' . $key);
+            $url       .= !empty($search) ? '?search=' . urlencode($search) : '';
+        ?>
+            <a href="<?= $url ?>" class="<?= $cls ?> py-3 px-1 text-sm transition-colors whitespace-nowrap"><?= $label ?></a>
+        <?php endforeach; ?>
     </nav>
 </div>
 
@@ -72,16 +108,13 @@
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
             </div>
-            <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2" placeholder="Search Invoice Number or Customer...">
+            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2" placeholder="Search Invoice Number or Customer...">
             <?php if (!empty($search)): ?>
-                <a href="<?= base_url('invoices') ?>" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                <a href="<?= base_url($statusTab !== 'all' ? 'invoices/'.$statusTab : 'invoices') ?>" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
                     <i class="fa-solid fa-xmark"></i>
                 </a>
             <?php endif; ?>
         </form>
-        <button class="text-gray-500 hover:text-gray-700 font-medium text-sm flex items-center gap-2">
-            <i class="fa-solid fa-filter"></i> Filter
-        </button>
     </div>
 
     <?php if (empty($invoices) && empty($search)): ?>
@@ -91,7 +124,7 @@
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">Belum ada Invoice</h3>
             <p class="text-gray-500 text-sm max-w-sm mx-auto mb-6">Anda belum membuat tagihan apapun. Buat invoice pertama Anda untuk mulai menagih pembayaran ke pelanggan.</p>
-            <button onclick="document.getElementById('create-invoice-modal').classList.remove('hidden')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-xl text-sm transition-all shadow-sm">
+            <button onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-xl text-sm transition-all shadow-sm">
                 + Create Invoice
             </button>
         </div>
@@ -144,7 +177,7 @@
                                     } elseif ($inv['status'] === 'pending') {
                                         $statusClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
                                         $statusIcon = 'fa-clock';
-                                    } elseif ($inv['status'] === 'expired') {
+                                    } elseif (in_array($inv['status'], ['expired', 'failed', 'cancelled'])) {
                                         $statusClass = 'bg-red-100 text-red-700 border-red-200';
                                         $statusIcon = 'fa-xmark';
                                     }
@@ -166,8 +199,9 @@
                                         <a href="<?= base_url('pay/' . $inv['invoice_number']) ?>" target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold text-xs bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
                                             View Page
                                         </a>
-                                        <button class="text-gray-400 hover:text-gray-900 p-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy Link"><i class="fa-regular fa-copy"></i></button>
-                                        <button class="text-gray-400 hover:text-gray-900 p-2"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                        <button onclick="copyLink('<?= base_url('pay/' . $inv['invoice_number']) ?>', this)" class="text-gray-400 hover:text-blue-600 p-2 opacity-0 group-hover:opacity-100 transition-colors" title="Copy Link">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -179,13 +213,14 @@
         
         <!-- Pagination -->
         <?php if ($totalPages > 1): ?>
+        <?php $baseUrl = base_url($statusTab !== 'all' ? 'invoices/'.$statusTab : 'invoices'); ?>
         <div class="p-4 border-t border-gray-100 flex items-center justify-between">
             <span class="text-sm text-gray-500">
                 Showing Page <span class="font-bold text-gray-900"><?= $page ?></span> of <span class="font-bold text-gray-900"><?= $totalPages ?></span>
             </span>
             <div class="flex gap-1">
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search='.urlencode($search) : '' ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    <a href="<?= $baseUrl ?>?page=<?= $page - 1 ?><?= !empty($search) ? '&search='.urlencode($search) : '' ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         <i class="fa-solid fa-chevron-left text-xs"></i>
                     </a>
                 <?php else: ?>
@@ -195,7 +230,7 @@
                 <?php endif; ?>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search='.urlencode($search) : '' ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    <a href="<?= $baseUrl ?>?page=<?= $page + 1 ?><?= !empty($search) ? '&search='.urlencode($search) : '' ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         <i class="fa-solid fa-chevron-right text-xs"></i>
                     </a>
                 <?php else: ?>
@@ -209,29 +244,104 @@
     <?php endif; ?>
 </div>
 
-<!-- Create Invoice Modal (Simplified for UI Demo) -->
-<div id="create-invoice-modal" class="fixed inset-0 z-50 hidden bg-gray-900/50 backdrop-blur-sm overflow-y-auto overflow-x-hidden flex justify-center items-center">
-    <div class="relative p-4 w-full max-w-md h-full md:h-auto">
-        <div class="relative bg-white rounded-2xl shadow-xl border border-gray-100">
-            <div class="flex justify-between items-center p-5 rounded-t border-b border-gray-100">
-                <h3 class="text-lg font-bold text-gray-900">Create New Invoice</h3>
-                <button type="button" onclick="document.getElementById('create-invoice-modal').classList.add('hidden')" class="text-gray-400 bg-transparent hover:bg-gray-100 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center transition-colors">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+<!-- ─── Create Invoice Modal ──────────────────────────────────────────────────── -->
+<div id="create-modal" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm flex justify-center items-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Buat Invoice Baru</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Tagihan manual ke pelanggan</p>
+            </div>
+            <button onclick="closeCreateModal()" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="<?= base_url('invoices/create') ?>" class="px-6 py-6 space-y-5 overflow-y-auto">
+            <input type="hidden" name="_csrf_token" value="<?= $csrfToken ?>">
+
+            <!-- Nominal -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nominal Tagihan (Rp) <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 font-bold text-sm pointer-events-none">Rp</span>
+                    <input type="text" name="amount" required
+                           class="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                           placeholder="0" oninput="formatPrice(this)">
+                </div>
+            </div>
+
+            <!-- Nama Pelanggan -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Pelanggan <span class="text-gray-400 font-normal">(opsional)</span></label>
+                <input type="text" name="customer_name"
+                       class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                       placeholder="Contoh: Budi Santoso">
+            </div>
+
+            <!-- Email Pelanggan -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email Pelanggan <span class="text-gray-400 font-normal">(opsional)</span></label>
+                <input type="email" name="customer_email"
+                       class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                       placeholder="budi@example.com">
+            </div>
+
+            <!-- Deskripsi -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Keterangan Tagihan <span class="text-gray-400 font-normal">(opsional)</span></label>
+                <textarea name="description" rows="2"
+                          class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 resize-none"
+                          placeholder="Misal: Pembayaran project website bulan Agustus..."></textarea>
+            </div>
+
+            <!-- API Info (Optional/Informative) -->
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3 text-sm text-blue-800">
+                <i class="fa-solid fa-circle-info mt-0.5"></i>
+                <p>Mencari integrasi otomatis? Gunakan <a href="<?= base_url('apikeys') ?>" class="font-bold underline hover:text-blue-900">API</a> kami.</p>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeCreateModal()" class="flex-1 border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-all">
+                    Batal
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm shadow-sm shadow-blue-600/20 transition-all">
+                    Buat Invoice
                 </button>
             </div>
-            <div class="p-8 text-center">
-                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
-                    <i class="fa-solid fa-code"></i>
-                </div>
-                <h4 class="text-gray-900 font-bold mb-2">API Integration Mode</h4>
-                <p class="text-gray-500 text-sm mb-6 leading-relaxed">Saat ini (MVP), Anda dapat membuat Invoice menggunakan <span class="font-bold text-gray-900">Secret Key</span> via endpoint API: <br><code class="bg-gray-100 px-2 py-1 rounded text-pink-600 font-mono text-xs mt-2 inline-block">POST /api/v1/invoices</code></p>
-                <a href="<?= base_url('apikeys') ?>" class="w-full inline-block text-white bg-blue-600 hover:bg-blue-700 font-semibold rounded-xl text-sm px-5 py-3 text-center shadow-sm shadow-blue-600/20 transition-all">
-                    Dapatkan API Keys
-                </a>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
+
+<script>
+function openCreateModal() {
+    document.getElementById('create-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+function closeCreateModal() {
+    document.getElementById('create-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+document.getElementById('create-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeCreateModal();
+});
+
+function formatPrice(el) {
+    let raw = el.value.replace(/\D/g, '');
+    el.value = raw ? parseInt(raw).toLocaleString('id-ID') : '';
+}
+
+async function copyLink(url, btn) {
+    try {
+        await navigator.clipboard.writeText(url);
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check text-green-500"></i>';
+        setTimeout(() => btn.innerHTML = orig, 1800);
+    } catch(e) {
+        prompt('Salin link ini:', url);
+    }
+}
+</script>
 
 <?php 
 $content = ob_get_clean(); 

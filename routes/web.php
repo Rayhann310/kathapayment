@@ -31,7 +31,9 @@ $router->get('/lang/{code}', 'HomeController@switchLang');
 
 // Web Routes (Views and Dashboards)
 $router->get('/dashboard', 'DashboardController@index');
-$router->get('/invoices', 'MerchantUIController@invoices');
+$router->get('/invoices', 'InvoiceUIController@index');
+$router->get('/invoices/{status}', 'InvoiceUIController@index');
+$router->post('/invoices/create', 'InvoiceUIController@create');
 $router->get('/payments', 'MerchantUIController@payments');
 $router->get('/payments/{status}', 'MerchantUIController@payments');
 $router->get('/payment-links', 'PaymentLinkController@index');
