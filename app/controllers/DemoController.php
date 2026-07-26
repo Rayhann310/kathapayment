@@ -32,8 +32,20 @@ class DemoController extends Controller
         $id = 'demo-' . bin2hex(random_bytes(8));
         $amount = rand(10, 500) * 1000; // Random amount between 10k - 500k
 
-        $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, status) VALUES (?, ?, 'pending')");
-        $stmt->execute([$id, $amount]);
+        try {
+            $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, status) VALUES (?, ?, 'pending')");
+            $stmt->execute([$id, $amount]);
+        } catch (\PDOException $e) {
+            // Error 42S02 means table doesn't exist
+            if ($e->getCode() == '42S02') {
+                \App\Services\SelfHealingService::runMigrations();
+                // Retry
+                $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, status) VALUES (?, ?, 'pending')");
+                $stmt->execute([$id, $amount]);
+            } else {
+                throw $e;
+            }
+        }
 
         // Pass to view
         $this->view('demo/qris_display', [

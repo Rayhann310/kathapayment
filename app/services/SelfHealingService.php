@@ -108,4 +108,27 @@ class SelfHealingService
             return false;
         }
     }
+
+    public static function runMigrations()
+    {
+        try {
+            $config = require BASE_PATH . '/config/database.php';
+            $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
+            $pdo = new \PDO($dsn, $config['username'], $config['password'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            ]);
+
+            $schemaFiles = glob(BASE_PATH . '/database/schema*.sql');
+            foreach ($schemaFiles as $file) {
+                $sql = file_get_contents($file);
+                if (!empty(trim($sql))) {
+                    $pdo->exec($sql);
+                }
+            }
+            return true;
+        } catch (\Exception $e) {
+            error_log("SelfHealing Migrations Failed: " . $e->getMessage());
+            return false;
+        }
+    }
 }
