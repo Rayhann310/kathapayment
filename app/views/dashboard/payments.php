@@ -55,10 +55,21 @@
 <!-- Tabs -->
 <div class="border-b border-gray-200 mb-6">
     <nav class="-mb-px flex gap-6">
-        <a href="#" class="border-b-2 border-blue-600 text-blue-600 font-bold py-3 px-1 text-sm">All Transactions</a>
-        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Succeeded</a>
-        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Refunded</a>
-        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Failed</a>
+        <?php
+        $tabs = [
+            'all'       => ['label' => 'All Transactions', 'url' => base_url('payments')],
+            'succeeded' => ['label' => 'Succeeded',        'url' => base_url('payments/succeeded')],
+            'refunded'  => ['label' => 'Refunded',         'url' => base_url('payments/refunded')],
+            'failed'    => ['label' => 'Failed',           'url' => base_url('payments/failed')],
+        ];
+        foreach ($tabs as $key => $tab):
+            $isActive = ($statusFilter ?? 'all') === $key;
+            $activeClass = $isActive
+                ? 'border-b-2 border-blue-600 text-blue-600 font-bold'
+                : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium';
+        ?>
+            <a href="<?= $tab['url'] ?><?= !empty($search) ? '?search='.urlencode($search) : '' ?>" class="<?= $activeClass ?> py-3 px-1 text-sm transition-colors whitespace-nowrap"><?= $tab['label'] ?></a>
+        <?php endforeach; ?>
     </nav>
 </div>
 
@@ -162,13 +173,18 @@
         
         <!-- Pagination -->
         <?php if ($totalPages > 1): ?>
+        <?php
+        // Build clean base URL for pagination, e.g. /payments/succeeded
+        $paginationBase = base_url($statusFilter !== 'all' ? 'payments/' . $statusFilter : 'payments');
+        $searchSuffix   = !empty($search) ? '&search=' . urlencode($search) : '';
+        ?>
         <div class="p-4 border-t border-gray-100 flex items-center justify-between">
             <span class="text-sm text-gray-500">
                 Showing Page <span class="font-bold text-gray-900"><?= $page ?></span> of <span class="font-bold text-gray-900"><?= $totalPages ?></span>
             </span>
             <div class="flex gap-1">
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search='.urlencode($search) : '' ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    <a href="<?= $paginationBase ?>?page=<?= $page - 1 ?><?= $searchSuffix ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         <i class="fa-solid fa-chevron-left text-xs"></i>
                     </a>
                 <?php else: ?>
@@ -178,7 +194,7 @@
                 <?php endif; ?>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search='.urlencode($search) : '' ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    <a href="<?= $paginationBase ?>?page=<?= $page + 1 ?><?= $searchSuffix ?>" class="p-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         <i class="fa-solid fa-chevron-right text-xs"></i>
                     </a>
                 <?php else: ?>

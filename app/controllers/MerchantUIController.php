@@ -80,10 +80,11 @@ class MerchantUIController extends Controller
         ]);
     }
 
-    public function payments()
+    public function payments($status = 'all')
     {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $search = $_GET['search'] ?? '';
+        $statusFilter = in_array($status, ['all', 'succeeded', 'refunded', 'failed']) ? $status : 'all';
         $limit = 15;
         $offset = ($page - 1) * $limit;
         
@@ -93,6 +94,15 @@ class MerchantUIController extends Controller
         if ($this->merchantId) {
             $query = "FROM payments p JOIN invoices i ON p.invoice_id = i.id WHERE i.merchant_id = :merchantId";
             $params = [':merchantId' => $this->merchantId];
+            
+            // Filter by status tab
+            if ($statusFilter === 'succeeded') {
+                $query .= " AND p.status = 'paid'";
+            } elseif ($statusFilter === 'refunded') {
+                $query .= " AND p.status = 'refunded'";
+            } elseif ($statusFilter === 'failed') {
+                $query .= " AND p.status = 'failed'";
+            }
             
             if ($search !== '') {
                 $query .= " AND (p.id LIKE :search OR i.invoice_number LIKE :search)";
@@ -118,11 +128,12 @@ class MerchantUIController extends Controller
         $totalPages = ceil($totalItems / $limit);
 
         $this->view('dashboard/payments', [
-            'title' => 'Payments - KathaPayment',
-            'payments' => $payments,
-            'page' => $page,
-            'totalPages' => $totalPages,
-            'search' => $search
+            'title'       => 'Payments - KathaPayment',
+            'payments'    => $payments,
+            'page'        => $page,
+            'totalPages'  => $totalPages,
+            'search'      => $search,
+            'statusFilter'=> $statusFilter,
         ]);
     }
 

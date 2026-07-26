@@ -33,6 +33,7 @@ $router->get('/lang/{code}', 'HomeController@switchLang');
 $router->get('/dashboard', 'DashboardController@index');
 $router->get('/invoices', 'MerchantUIController@invoices');
 $router->get('/payments', 'MerchantUIController@payments');
+$router->get('/payments/{status}', 'MerchantUIController@payments');
 $router->get('/payment-links', 'MerchantUIController@paymentLinks');
 $router->get('/refunds', 'MerchantUIController@refunds');
 $router->get('/payment-methods', 'MerchantUIController@paymentMethods');
