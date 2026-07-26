@@ -10,22 +10,22 @@ services:
     volumes:
       - .:/var/www/html
     environment:
-      - DB_HOST=db
+      - DB_HOST=db-katharekap
       - DB_USER=root
-      - DB_PASS=secret
-      - DB_NAME=kathapayment
+      - DB_PASS=KathaRekap23@
+      - DB_NAME=katharekap
     depends_on:
-      - db
+      - db-katharekap
 
-  db:
+  db-katharekap:
     image: mysql:8.0
     container_name: kathapayment_db
     restart: unless-stopped
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: kathapayment
+      MYSQL_ROOT_PASSWORD: KathaRekap23@
+      MYSQL_DATABASE: katharekap
     volumes:
       - db_data:/var/lib/mysql
       # Uncomment the next line to automatically run schema scripts on init:
