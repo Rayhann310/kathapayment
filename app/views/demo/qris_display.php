@@ -136,7 +136,12 @@
 
         // Polling function
         let pollingInterval = setInterval(() => {
-            fetch("<?= base_url('api/demo/status?id=') ?>" + trxId)
+            let apiUrl = "<?= base_url('api/demo/status?id=') ?>" + trxId;
+            if (window.location.protocol === 'https:' && apiUrl.startsWith('http:')) {
+                apiUrl = apiUrl.replace('http:', 'https:');
+            }
+
+            fetch(apiUrl)
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'paid') {
