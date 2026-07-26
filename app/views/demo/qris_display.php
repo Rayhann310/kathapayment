@@ -23,14 +23,14 @@
     </div>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col md:flex-row items-center justify-center p-4 gap-6 max-w-5xl mx-auto w-full">
+    <div class="flex-1 flex flex-col lg:flex-row items-center lg:items-start justify-center p-4 gap-6 max-w-6xl mx-auto w-full mt-2 md:mt-6">
         
         <!-- Left: Configuration Form -->
-        <div class="w-full md:w-1/2 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 p-8">
+        <div class="w-full lg:w-1/3 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 p-8 z-10">
             <h2 class="text-2xl font-bold text-gray-900 mb-6"><i class="fa-solid fa-sliders text-blue-600 mr-2"></i> Konfigurasi Simulasi</h2>
             <form action="<?= base_url('demo/qris') ?>" method="GET" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Metode Pembayaran</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Metode Pembayaran</label>
                     <select name="method" class="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 bg-gray-50 p-3 text-gray-800">
                         <option value="QRIS" <?= $method == 'QRIS' ? 'selected' : '' ?>>QRIS (Gopay, Dana, Ovo, ShopeePay)</option>
                         <option value="BCA_VA" <?= $method == 'BCA_VA' ? 'selected' : '' ?>>BCA Virtual Account</option>
@@ -49,7 +49,7 @@
                 </div>
 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all active:scale-95">
-                    Generate Skenario Baru
+                    Generate Skenario
                 </button>
             </form>
             
@@ -59,88 +59,153 @@
                         <i class="fa-solid fa-mobile-screen-button text-xl"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-gray-900 text-sm mb-1">Cara Menguji Simulasi</h4>
+                        <h4 class="font-bold text-gray-900 text-sm mb-1">Cara Menguji</h4>
                         <p class="text-xs text-gray-500 leading-relaxed">
-                            Pilih metode dan ubah angka di atas, klik Generate, lalu <strong>Pindai QR Code</strong> di layar kanan menggunakan kamera Smartphone Anda. Di ponsel Anda akan terbuka halaman simulasi pembayaran interaktif yang sangat nyata.
+                            Simulasi ini mendukung pembayaran via HP. Jika memilih QRIS, <strong>Pindai QR Code</strong> di layar. Jika VA, klik tombol <strong>Buka Simulator</strong>.
                         </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Preview Display -->
-        <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex flex-col relative">
-            
-            <!-- Countdown Banner -->
-            <div id="countdown-banner" class="bg-red-50 text-red-600 text-center py-2 text-sm font-bold flex items-center justify-center gap-2">
-                <i class="fa-regular fa-clock"></i>
-                <span>Selesaikan pembayaran dalam: <span id="timer-display">05:00</span></span>
-            </div>
+        <!-- Right: Premium Checkout UI -->
+        <div class="w-full lg:w-2/3 flex flex-col md:flex-row bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 relative min-h-[550px]">
+            <!-- Background mesh effect -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-blue-100 blur-3xl opacity-50 z-0 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 rounded-full bg-indigo-100 blur-3xl opacity-50 z-0 pointer-events-none"></div>
 
-            <!-- Header -->
-            <div id="status-header" class="bg-[#00529C] px-6 py-8 text-center transition-colors duration-500">
-                <h2 class="text-white text-xl font-bold mb-1">
-                    <?= $method === 'QRIS' ? 'Pindai Untuk Simulasi' : 'Instruksi Pembayaran' ?>
-                </h2>
-                <p class="text-blue-100 text-sm">
-                    <?= $method === 'QRIS' ? 'Gunakan kamera HP Anda untuk membuka halaman simulasi E-Wallet' : 'Gunakan Simulator HP untuk mensimulasikan pembayaran' ?>
-                </p>
-            </div>
-            
-            <div class="p-8 pb-10 flex flex-col items-center">
-                <!-- Visuals based on method -->
-                <?php if ($method === 'QRIS'): ?>
-                    <div id="qr-wrapper" class="p-3 bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 relative transition-all duration-500">
-                        <div id="qrcode"></div>
-                        <!-- Success Overlay -->
-                        <div id="success-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10">
-                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-3 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
-                                <i class="fa-solid fa-check text-3xl"></i>
-                            </div>
-                            <p class="font-bold text-gray-800">Berhasil!</p>
-                        </div>
+            <!-- Order Summary Section (Left of the right panel) -->
+            <div class="w-full md:w-5/12 bg-gray-50/80 backdrop-blur border-r border-gray-100 p-8 relative z-10 flex flex-col">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
+                        <i class="fa-solid fa-store"></i>
                     </div>
-                <?php else: ?>
-                    <div id="qr-wrapper" class="w-full mb-6 relative transition-all duration-500">
-                        <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200 text-center relative z-0">
-                            <div class="text-gray-500 text-sm font-semibold mb-2">
-                                <?= $method === 'ALFAMART' ? 'Kode Pembayaran' : 'Nomor Virtual Account' ?>
-                            </div>
-                            <div class="text-2xl font-mono font-bold text-gray-900 tracking-wider">
-                                <?= $method === 'ALFAMART' ? 'KTHA' . rand(10000000, 99999999) : '8077' . rand(100000000, 999999999) ?>
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
-                                <a href="<?= $scan_url ?>" target="_blank" class="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all active:scale-95">
-                                    <i class="fa-solid fa-mobile-screen-button"></i> Buka Simulator
-                                </a>
-                                <button onclick="copySimulationLink()" class="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-bold py-3 px-4 rounded-xl shadow-sm transition-all active:scale-95">
-                                    <i class="fa-solid fa-copy"></i> Salin Link
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Success Overlay -->
-                        <div id="success-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10">
-                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-3 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
-                                <i class="fa-solid fa-check text-3xl"></i>
-                            </div>
-                            <p class="font-bold text-gray-800">Berhasil!</p>
-                        </div>
+                    <div>
+                        <div class="text-sm text-gray-500 font-medium">Merchant</div>
+                        <div class="font-bold text-gray-900">Katha Store</div>
                     </div>
-                <?php endif; ?>
+                </div>
 
-                <div class="text-center w-full">
-                    <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Pembayaran</div>
-                    <div id="amount-display" class="text-3xl font-black text-gray-900 mb-6">Rp <?= number_format($amount, 0, ',', '.') ?></div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Detail Pesanan</h3>
                     
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 text-sm mb-3">
-                        <span class="text-gray-500 font-medium">Metode Simulasi</span>
-                        <span class="font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md text-xs"><?= htmlspecialchars(str_replace('_', ' ', $method)) ?></span>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex gap-3">
+                            <div class="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0 shadow-sm border border-gray-100">
+                                <img src="https://ui-avatars.com/api/?name=Katha+Product&background=00529C&color=fff&size=100" alt="Product" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-800 text-sm">Paket Simulasi API</div>
+                                <div class="text-xs text-gray-500 mt-1">Metode: <?= htmlspecialchars(str_replace('_', ' ', $method)) ?></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 text-sm">
-                        <span class="text-gray-500 font-medium">ID Transaksi</span>
-                        <span id="trx-id-display" class="font-bold text-gray-800 uppercase text-xs"><?= substr($id, -8) ?></span>
+                </div>
+
+                <div class="mt-auto border-t border-dashed border-gray-200 pt-5">
+                    <div class="flex justify-between items-center text-sm mb-3 text-gray-500">
+                        <span>Subtotal</span>
+                        <span class="font-medium text-gray-700">Rp <?= number_format($amount, 0, ',', '.') ?></span>
                     </div>
+                    <div class="flex justify-between items-center text-sm mb-5 text-gray-500">
+                        <span>Biaya Admin</span>
+                        <span class="text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">Gratis</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-800">Total Tagihan</span>
+                        <span class="text-2xl font-black text-blue-600" id="amount-display">Rp <?= number_format($amount, 0, ',', '.') ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Action Section (Right of the right panel) -->
+            <div class="w-full md:w-7/12 p-8 relative z-10 flex flex-col">
+                <!-- Countdown Banner -->
+                <div id="countdown-banner" class="absolute top-0 left-0 right-0 bg-red-50/80 backdrop-blur-sm text-red-600 text-center py-2 text-sm font-bold flex items-center justify-center gap-2 border-b border-red-100 z-20">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>Selesaikan dalam <span id="timer-display">05:00</span></span>
+                </div>
+
+                <!-- Trust Badges -->
+                <div class="flex justify-end gap-2 mt-6 mb-6">
+                    <span class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                        <i class="fa-solid fa-lock text-gray-400"></i> SSL Secure
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                        <i class="fa-solid fa-shield-halved text-gray-400"></i> Verified
+                    </span>
+                </div>
+
+                <!-- Header / Method Logo -->
+                <div id="status-header" class="text-center mb-6 transition-colors duration-500">
+                    <h2 class="text-gray-900 text-xl font-bold mb-1">
+                        <?= $method === 'QRIS' ? 'Pindai QRIS' : 'Instruksi Pembayaran' ?>
+                    </h2>
+                    <p class="text-gray-500 text-sm">
+                        <?= $method === 'QRIS' ? 'Buka aplikasi e-wallet atau m-banking Anda' : 'Gunakan Simulator HP untuk menyalin kode' ?>
+                    </p>
+                </div>
+                
+                <div class="flex flex-col items-center flex-1 justify-center w-full">
+                    <!-- Visuals based on method -->
+                    <?php if ($method === 'QRIS'): ?>
+                        <div id="qr-wrapper" class="relative group transition-all duration-500">
+                            <!-- Standard QRIS Frame Styling -->
+                            <div class="bg-red-600 text-white font-black text-center py-2 rounded-t-xl text-lg tracking-widest shadow-sm">
+                                QRIS
+                            </div>
+                            <div class="p-4 bg-white shadow-md border-x border-gray-200 flex justify-center">
+                                <div id="qrcode"></div>
+                            </div>
+                            <div class="bg-[#00529C] text-white text-center py-2 rounded-b-xl text-xs font-semibold shadow-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-building-columns"></i> GPN / NNS
+                            </div>
+                            
+                            <!-- Success Overlay -->
+                            <div id="success-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10 border border-green-100 shadow-xl">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-4 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
+                                    <i class="fa-solid fa-check text-3xl"></i>
+                                </div>
+                                <p class="font-bold text-gray-800 text-lg">Berhasil!</p>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div id="qr-wrapper" class="w-full max-w-sm relative transition-all duration-500">
+                            <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-200 text-center relative z-0">
+                                <div class="w-16 h-16 bg-blue-50 rounded-full mx-auto flex items-center justify-center text-blue-600 text-2xl mb-4 shadow-inner">
+                                    <i class="fa-solid <?= $method === 'ALFAMART' ? 'fa-shop' : 'fa-building-columns' ?>"></i>
+                                </div>
+                                <div class="text-gray-500 text-sm font-semibold mb-2">
+                                    <?= $method === 'ALFAMART' ? 'Kode Pembayaran' : 'Nomor Virtual Account' ?>
+                                </div>
+                                <div class="text-2xl font-mono font-bold text-gray-900 tracking-wider bg-gray-50 py-3 rounded-xl border border-gray-100 mb-6">
+                                    <?= $method === 'ALFAMART' ? 'KTHA' . rand(1000, 9999) : '8077' . rand(10000, 99999) ?>
+                                </div>
+                                <div class="flex flex-col gap-3">
+                                    <a href="<?= $scan_url ?>" target="_blank" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-95">
+                                        <i class="fa-solid fa-mobile-screen-button"></i> Buka Simulator
+                                    </a>
+                                    <button onclick="copySimulationLink()" class="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-bold py-3 px-4 rounded-xl shadow-sm transition-all active:scale-95">
+                                        <i class="fa-solid fa-copy"></i> Salin Link Simulator
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Success Overlay -->
+                            <div id="success-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-10 border border-green-100 shadow-xl">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-4 shadow-sm transform scale-50 transition-transform duration-500" id="success-icon">
+                                    <i class="fa-solid fa-check text-3xl"></i>
+                                </div>
+                                <p class="font-bold text-gray-800 text-lg">Berhasil!</p>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Footer Info -->
+                <div class="mt-8 text-center text-xs text-gray-400 font-medium">
+                    ID Trx: <span id="trx-id-display" class="font-mono"><?= substr($id, -8) ?></span><br>
+                    Powered by <strong>KathaPayment</strong>
                 </div>
             </div>
         </div>
