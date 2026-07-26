@@ -42,9 +42,13 @@ class DemoController extends Controller
             $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, payment_method, status) VALUES (?, ?, ?, 'pending')");
             $stmt->execute([$id, $amount, $method]);
         } catch (\PDOException $e) {
-            // Error 42S02 means table doesn't exist or missing column
-            if ($e->getCode() == '42S02' || strpos($e->getMessage(), 'Unknown column') !== false) {
+            // Error 42S02 means table doesn't exist. Error 42S22 or 1054 means missing column
+            if ($e->getCode() == '42S02' || $e->getCode() == '42S22' || strpos($e->getMessage(), 'Unknown column') !== false) {
+                // Drop table safely so it forces recreate with new schema
+                try { $this->db->exec("DROP TABLE IF EXISTS demo_transactions"); } catch(\Exception $ex) {}
+                
                 \App\Services\SelfHealingService::runMigrations();
+                
                 // Retry
                 $stmt = $this->db->prepare("INSERT INTO demo_transactions (id, amount, payment_method, status) VALUES (?, ?, ?, 'pending')");
                 $stmt->execute([$id, $amount, $method]);
