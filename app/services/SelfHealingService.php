@@ -64,8 +64,48 @@ class SelfHealingService
     private function logError($message)
     {
         $logFile = BASE_PATH . '/logs/self_healing.log';
+        if (!is_dir(dirname($logFile))) {
+            mkdir(dirname($logFile), 0777, true);
+        }
         $time = date('Y-m-d H:i:s');
         file_put_contents($logFile, "[$time] $message\n", FILE_APPEND);
-        echo "ERROR: $message\n";
+        error_log("SelfHealing ERROR: $message");
+    }
+
+    public static function autoCreateDatabase($config)
+    {
+        try {
+            // Connect without database
+            $dsn = "mysql:host={$config['host']};port={$config['port']};charset={$config['charset']}";
+            $pdo = new \PDO($dsn, $config['username'], $config['password'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            ]);
+
+            // Create database if not exists
+            $dbName = $config['database'];
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            $pdo->exec("USE `$dbName`");
+
+            // Look for all schema files in database folder
+            $schemaFiles = glob(BASE_PATH . '/database/schema*.sql');
+            foreach ($schemaFiles as $file) {
+                $sql = file_get_contents($file);
+                if (!empty(trim($sql))) {
+                    $pdo->exec($sql);
+                }
+            }
+
+            // Also run seeder if exists
+            $seederFile = BASE_PATH . '/database/seeder.php';
+            if (file_exists($seederFile)) {
+                // To avoid requiring and conflicting, we can just let seeder run manually later
+                // or require it carefully. For safety, we skip automatic seeder here or call it via CLI.
+            }
+            
+            return true;
+        } catch (\PDOException $e) {
+            error_log("SelfHealing Failed to auto-create database: " . $e->getMessage());
+            return false;
+        }
     }
 }

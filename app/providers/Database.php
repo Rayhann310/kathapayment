@@ -25,8 +25,18 @@ class Database
         try {
             $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
         } catch (PDOException $e) {
-            // For production, log this instead of displaying
-            die("Database connection failed: " . $e->getMessage());
+            // Error 1049 is "Unknown database"
+            if ($e->getCode() == 1049) {
+                if (\App\Services\SelfHealingService::autoCreateDatabase($config)) {
+                    // Retry connection after creation
+                    $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
+                } else {
+                    die("Database connection failed and auto-creation failed.");
+                }
+            } else {
+                // For production, log this instead of displaying
+                die("Database connection failed: " . $e->getMessage());
+            }
         }
     }
 

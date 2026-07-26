@@ -9,6 +9,13 @@ class AuthController extends Controller
 {
     public function loginForm()
     {
+        // Trigger self-healing DB check
+        try {
+            \App\Providers\Database::getInstance()->getConnection();
+        } catch (\Exception $e) {
+            // Ignored, handled by Database provider
+        }
+
         // If already logged in, redirect to dashboard
         if (isset($_SESSION['user_id'])) {
             redirect('dashboard');
